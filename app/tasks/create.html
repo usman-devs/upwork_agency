@@ -1,0 +1,33 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Create New Task</h2>
+    <form method="POST" action="{{ url_for('tasks.create_task') }}">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control", rows=4) }}
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                {{ form.status.label(class="form-label") }}
+                {{ form.status(class="form-select") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.priority.label(class="form-label") }}
+                {{ form.priority(class="form-select") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.deadline.label(class="form-label") }}
+                {{ form.deadline(class="form-control") }}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
+    </form>
+</div>
+{% endblock %}

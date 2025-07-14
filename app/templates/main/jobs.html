@@ -1,0 +1,84 @@
+{% extends "main/base.html" %}
+
+{% block styles %}
+  {{ super() }}
+  <link href="{{ url_for('static', filename='css/jobs.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container jobs-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Job Listings</h2>
+    <a href="{{ url_for('main.refresh_jobs') }}" class="btn btn-outline-primary">
+      <i class="fas fa-sync-alt"></i> Refresh
+    </a>
+  </div>
+
+  {% if jobs %}
+    {% for job in jobs %}
+    <div class="card job-card">
+      <div class="job-header">
+        <h3 class="job-title">{{ job.title }}</h3>
+      </div>
+      <div class="card-body job-body">
+        <p class="job-description">{{ job.description }}</p>
+        <div class="job-meta">
+          {% if job.posted %}
+          <span class="job-posted">
+            <i class="far fa-clock"></i> {{ job.posted }}
+          </span>
+          {% endif %}
+          <div class="job-actions">
+            {% if job.url %}
+            <a href="{{ job.url }}" class="btn btn-primary" target="_blank">
+              View Job
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    {% if total_pages > 1 %}
+    <nav class="pagination-container">
+      <ul class="pagination">
+        {% if page > 1 %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('main.job_list', page=page-1) }}">
+            Previous
+          </a>
+        </li>
+        {% endif %}
+        
+        {% for p in range(1, total_pages+1) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('main.job_list', page=p) }}">
+            {{ p }}
+          </a>
+        </li>
+        {% endfor %}
+        
+        {% if page < total_pages %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('main.job_list', page=page+1) }}">
+            Next
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+
+  {% else %}
+    <div class="empty-jobs">
+      <i class="far fa-folder-open"></i>
+      <h3>No Job Listings Available</h3>
+      <p>We couldn't find any current job listings.</p>
+      <a href="{{ url_for('main.refresh_jobs') }}" class="btn btn-primary mt-3">
+        Try Refreshing
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
