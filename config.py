@@ -1,36 +1,35 @@
-import os
-from dotenv import load_dotenv
 from datetime import timedelta
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 
 # Get the root directory of the project
-root_dir = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env file
-load_dotenv(os.path.join(root_dir, '.env'))
+load_dotenv(BASE_DIR / '.env')
 
 class Config:
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
+    # Security and Core Settings
+    SECRET_KEY = os.getenv('SECRET_KEY', None)
+    FLASK_ENV = os.getenv('FLASK_ENV', 'development')
+    DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't')
+
+    # Database Configuration
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(root_dir, 'app.db')
+        f"sqlite:///{BASE_DIR / 'instance' / 'site.db'}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Flask Core Configuration
-    SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here')
-    FLASK_ENV = os.getenv('FLASK_ENV', 'development')
-    DEBUG = os.getenv('DEBUG', 'False') == 'True'
-    
-    # Database Configuration - Using absolute path
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or \
-        f'sqlite:///{os.path.join(root_dir, "instance", "site.db")}'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Engine Options
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_pre_ping': True,
-        'pool_recycle': 300,
-        'pool_size': 10,
-        'max_overflow': 20
+        'pool_recycle': 300 if FLASK_ENV == 'development' else 3600,
+        'pool_size': 10 if FLASK_ENV == 'development' else 20,
+        'max_overflow': 20 if FLASK_ENV == 'development' else 30
     }
-    
-    # ... rest of your config remains the same ...
+
+    # Session lifetime
+    PERMANENT_SESSION_LIFETIME = timedelta(days=1)
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -43,12 +42,6 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_pre_ping': True,
-        'pool_recycle': 3600,
-        'pool_size': 20,
-        'max_overflow': 30
-    }
 
 config = {
     'development': DevelopmentConfig,

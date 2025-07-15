@@ -1,85 +1,101 @@
 from datetime import datetime
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, current_app
+from flask import Blueprint, render_template, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import func, or_
 
-from app.models import Task, Project, Notification, User, Bid
-from app.utils.helpers import calculate_feasibility
+from app import db  # Centralized db import
+from app.models import Task, Project, User, Bid
 
-main_bp = Blueprint('main_bp', __name__)
+# Blueprint named consistently with registration
+main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    """Home page route"""
-    return render_template('main/index.html')
+    """Homepage with recent activity"""
+    try:
+        # recent_tasks = Task.query.order_by(Task.id.desc()).limit(5).all()
+        # recent_projects = Project.query.order_by(Project.id.desc()).limit(5).all()
+        
+        # return render_template('main/index.html',
+                            # tasks=recent_tasks,
+                            # projects=recent_projects,
+                            # todos=[])
+    
+        return render_template('main/index.html')
+    except Exception as e:
+        current_app.logger.error(f"Index error: {str(e)}", exc_info=True)
+        flash('Error loading homepage', 'danger')
+        return redirect(url_for('main.index'))
 
 @main_bp.route('/dashboard')
 @login_required
 def dashboard():
-    from app import db  # 🔥 FIX: avoid circular import by importing locally
-
-    """Main dashboard with role-specific views"""
+    """Role-specific dashboard view"""
     try:
-        # Base queries
-        projects_query = Project.query
-        tasks_query = Task.query
-
+        # Initialize variables
+        projects, tasks, team_members, metrics = [], [], [], {}
+        
         if current_user.role == 'admin':
-            projects = projects_query.order_by(Project.created_at.desc()).limit(5).all()
-            tasks = tasks_query.order_by(Task.created_at.desc()).limit(20).all()
+            projects = Project.query.order_by(Project.created_at.desc()).limit(5).all()
+            tasks = Task.query.order_by(Task.created_at.desc()).limit(20).all()
             team_members = User.query.filter(User.role != 'admin').limit(5).all()
-
-            metrics = {
-                'active_projects': projects_query.filter_by(status='active').count(),
-                'pending_bids': Bid.query.filter_by(status='draft').count(),
-                'revenue': db.session.query(func.sum(Project.budget)).filter_by(status='active').scalar() or 0,
-            }
+            
+            metrics.update({
+                'active_projects': db.session.query(Project)
+                                    .filter_by(status='active').count(),
+                'pending_bids': db.session.query(Bid)
+                                 .filter_by(status='draft').count(),
+                'revenue': db.session.query(func.sum(Project.budget))
+                            .filter_by(status='active').scalar() or 0
+            })
 
         elif current_user.role == 'manager':
-            projects = projects_query.order_by(Project.created_at.desc()).limit(5).all()
-            tasks = tasks_query.filter(
+            projects = Project.query.filter_by(manager_id=current_user.id)\
+                          .order_by(Project.created_at.desc()).limit(5).all()
+            project_ids = [p.id for p in projects]
+            
+            tasks = Task.query.filter(
                 or_(
-                    Task.project_id.in_([p.id for p in projects]),
+                    Task.project_id.in_(project_ids),
                     Task.assignee_id == current_user.id
                 )
             ).order_by(Task.created_at.desc()).limit(20).all()
+            
             team_members = User.query.filter_by(availability=True).limit(5).all()
-            metrics = {}
 
-        else:  # member
-            projects = projects_query.join(Task).filter(
-                Task.assignee_id == current_user.id
-            ).order_by(Project.created_at.desc()).limit(5).all()
-            tasks = tasks_query.filter_by(assignee_id=current_user.id).order_by(
-                Task.created_at.desc()).limit(20).all()
-            team_members = []
-            metrics = {}
+        else:  # Regular member
+            tasks = Task.query.filter_by(assignee_id=current_user.id)\
+                     .order_by(Task.created_at.desc()).limit(20).all()
+            projects = Project.query.join(Task)\
+                          .filter(Task.assignee_id == current_user.id)\
+                          .order_by(Project.created_at.desc()).limit(5).all()
 
-        # Calculated stats for dashboard
-        total_projects = Project.query.count()
-        total_tasks = len(tasks)
-        pending_tasks = sum(1 for t in tasks if t.status == 'todo')
-        completed_tasks = sum(1 for t in tasks if t.status == 'completed')
-        recent_tasks = tasks[:5]
+        # Calculate statistics
+        task_stats = {
+            'total': len(tasks),
+            'pending': sum(1 for t in tasks if t.status == 'todo'),
+            'completed': sum(1 for t in tasks if t.status == 'completed'),
+            'overdue': sum(1 for t in tasks if t.deadline and 
+                         t.deadline < datetime.utcnow() and 
+                         t.status != 'completed')
+        }
 
+        # Get upcoming deadlines
         upcoming_tasks = sorted(
             [t for t in tasks if t.deadline and t.deadline >= datetime.utcnow()],
             key=lambda x: x.deadline
         )[:5]
 
         return render_template('main/dashboard.html',
-                               total_projects=total_projects,
-                               total_tasks=total_tasks,
-                               pending_tasks=pending_tasks,
-                               completed_tasks=completed_tasks,
-                               recent_tasks=recent_tasks,
-                               upcoming_tasks=upcoming_tasks,
-                               team_members=team_members,
-                               metrics=metrics,
-                               now=datetime.utcnow(),
-                               title='Dashboard')
+                            projects=projects,
+                            recent_tasks=tasks[:5],
+                            upcoming_tasks=upcoming_tasks,
+                            team_members=team_members,
+                            metrics=metrics,
+                            stats=task_stats,
+                            now=datetime.utcnow())
 
     except Exception as e:
         current_app.logger.error(f"Dashboard error: {str(e)}", exc_info=True)
-        flash('Error loading dashboard', 'danger')
-        return redirect(url_for('auth_bp.login'))
+        flash('Error loading dashboard data', 'danger')
+        return redirect(url_for('main.index'))

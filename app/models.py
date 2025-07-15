@@ -1,6 +1,12 @@
 from datetime import datetime
 from flask_login import UserMixin
-from app import db, login_manager
+from flask_sqlalchemy import SQLAlchemy
+import os
+
+db = SQLAlchemy()
+
+from dotenv import load_dotenv
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -20,6 +26,24 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
+    
+class Jobs(db.Model):
+    __tablename__ = 'jobs'
+
+    job_id = db.Column(db.String(100), primary_key=True)
+    title = db.Column(db.String(255))
+    description = db.Column(db.Text)
+    connects_required = db.Column(db.Integer)
+    category = db.Column(db.String(100))
+    skills_requested = db.Column(db.Text)
+    date_posted = db.Column(db.Date)
+    deadline = db.Column(db.Date)
+    stage = db.Column(db.String(100))
+    expected_cost = db.Column(db.Numeric(10, 2))
+    expected_earning = db.Column(db.Numeric(10, 2))
+    client_rating = db.Column(db.Numeric(3, 2))
+    feasibility_score = db.Column(db.Numeric(4, 2))
+    link = db.Column(db.String(255))
 
 class Project(db.Model):
     __tablename__ = 'projects'
@@ -77,6 +101,12 @@ class Notification(db.Model):
             'is_read': self.is_read,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M')
         }
+class Todo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120))
+    status = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Bid(db.Model):
     __tablename__ = 'bids'
@@ -95,7 +125,3 @@ class Bid(db.Model):
 
     def __repr__(self):
         return f"Bid('{self.upwork_job_id}', '{self.status}')"
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))

@@ -1,0 +1,50 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>To-Do List</h2>
+    <a href="{{ url_for('tasks.create_todo') }}" class="btn btn-primary mb-3">Create Todo</a>
+
+    <div class="card">
+        <div class="card-body">
+            {% if todos %}
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Project</th>
+                        <th>Assigned To</th>
+                        <th>Status</th>
+                        <th>Due Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for todo in todos %}
+                    <tr>
+                        <td>{{ todo.title }}</td>
+                        <td>{{ todo.project.name if todo.project else 'Unassigned' }}</td>
+                        <td>{{ todo.assignee.username if todo.assignee else 'Unassigned' }}</td>
+                        <td>
+                            <span class="badge bg-{% if todo.status == 'completed' %}success
+                                                  {% elif todo.status == 'in_progress' %}primary
+                                                  {% else %}warning{% endif %}">
+                                {{ todo.status|replace('_', ' ')|title }}
+                            </span>
+                        </td>
+                        <td>{{ todo.due_date.strftime('%Y-%m-%d') if todo.due_date else 'None' }}</td>
+                        <td>
+                            <a href="{{ url_for('tasks.edit_todo', todo_id=todo.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <a href="{{ url_for('tasks.assign_todo', todo_id=todo.id) }}" class="btn btn-sm btn-outline-secondary">Assign</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">No todos available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

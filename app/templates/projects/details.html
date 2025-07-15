@@ -1,0 +1,44 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4 text-center">Project Details</h2>
+
+  {% if project %}
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h4 class="card-title">
+        <i class="fas fa-briefcase text-info"></i> {{ project.title }}
+      </h4>
+      <p class="card-text text-muted">
+        {{ project.description or "No description provided." }}
+      </p>
+
+      <ul class="list-group list-group-flush mb-3">
+        <li class="list-group-item">
+          <strong>Status:</strong>
+          <span class="badge bg-info">{{ project.status|capitalize }}</span>
+        </li>
+        {% if project.deadline %}
+        <li class="list-group-item">
+          <strong>Deadline:</strong> {{ project.deadline.strftime('%Y-%m-%d') }}
+        </li>
+        {% endif %}
+        <li class="list-group-item">
+          <strong>Created At:</strong> {{ project.created_at.strftime('%Y-%m-%d') }}
+        </li>
+        <li class="list-group-item">
+          <strong>Creator:</strong> {{ project.creator.username }}
+        </li>
+      </ul>
+
+      <a href="{{ url_for('main_bp.projects') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Projects
+      </a>
+    </div>
+  </div>
+  {% else %}
+    <p class="text-muted text-center">Project not found.</p>
+  {% endif %}
+</div>
+{% endblock %}

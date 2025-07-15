@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, current_user, login_required
 from app.auth.forms import LoginForm, RegistrationForm
 from flask_login import login_user, logout_user
+from app.models import db, User
 
 
 # Create Blueprint
@@ -32,7 +33,7 @@ def logout():
     from app import db, bcrypt  
     from app.models import User
     logout_user()
-    return redirect(url_for('auth.login'))
+    return redirect(url_for('auth_bp.login'))
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
@@ -53,5 +54,5 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You can now log in', 'success')
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth_bp.login'))
     return render_template('auth/register.html', title='Register', form=form)
