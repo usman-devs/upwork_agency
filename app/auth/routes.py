@@ -1,16 +1,19 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, current_user, login_required
 from app.auth.forms import LoginForm, RegistrationForm
-from app import db, bcrypt
-from app.models import User
+from flask_login import login_user, logout_user
+
 
 # Create Blueprint
-bp = Blueprint('auth_bp', __name__)
+auth_bp = Blueprint('auth_bp', __name__)
 
 
 
-@bp.route('/login', methods=['GET', 'POST'])
+
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    from app import db, bcrypt
+    from app.models import User
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
     form = LoginForm()
@@ -24,14 +27,18 @@ def login():
             flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('auth/login.html', title='Login', form=form)
 
-@bp.route('/logout')
+@auth_bp.route('/logout')
 def logout():
+    from app import db, bcrypt  
+    from app.models import User
     logout_user()
     return redirect(url_for('auth.login'))
 
 
-@bp.route('/register', methods=['GET', 'POST'])
+@auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
+    from app import db, bcrypt  
+    from app.models import User
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
     form = RegistrationForm()
