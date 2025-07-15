@@ -1,0 +1,45 @@
+Muhammad Usman
+123 Main Street, Lahore, Punjab, 54000
+Phone: (123) 456-7890 | Email: musman@email.com | LinkedIn: linkedin.com/in/musman
+
+Objective
+Motivated and detail-oriented professional seeking a Software Engineer position at TechTrend Innovations to leverage skills in software development, data analysis, and project management to contribute to organizational success.
+
+Education
+Bachelor of Science in Computer Science, University of Lahore, Lahore, Punjab
+Graduation: May 2023
+- GPA: 3.75/4.0
+- Relevant Coursework: Data Structures, Algorithms, Database Management
+
+Experience
+Software Engineer, CodeZap Solutions, Lahore, Punjab
+June 2023 - Present
+- Managed a team of 5 to deliver web applications on time and within budget
+- Developed and implemented strategies that increased application performance by 20%
+- Collaborated with cross-functional teams to streamline development processes
+
+Junior Developer, InnoTech Systems, Karachi, Sindh
+July 2021 - May 2023
+- Conducted market research to identify user requirements for mobile applications
+- Prepared detailed reports for senior management to guide product development
+- Improved process workflows, reducing development costs by 15%
+
+Skills
+- Technical: Python, SQL, JavaScript
+- Soft: Team Leadership, Communication, Problem-Solving
+- Certifications: AWS Certified Developer, Google Data Analytics Professional
+
+Projects
+Inventory Management System, University of Lahore, March 2023
+- Developed a web application using HTML, CSS, and JavaScript, resulting in a 30% increase in user engagement
+- Technology/Tools Used: Git, VS Code, Node.js
+
+Awards and Honors
+- Best Final Year Project, University of Lahore, 2023
+- Dean’s List, University of Lahore, 2021-2022
+
+Extracurricular Activities
+- Volunteer, TechAid Foundation, June 2023 - Present
+  - Organized community events to raise funds for STEM education
+- Member, Coding Club, University of Lahore, September 2019 - May 2023
+  - Led workshops on career development for students
