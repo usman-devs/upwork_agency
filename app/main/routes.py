@@ -3,8 +3,8 @@ from flask import Blueprint, render_template, flash, redirect, url_for, current_
 from flask_login import login_required, current_user
 from sqlalchemy import func, or_
 
-from app import db  # Centralized db import
-from app.models import Task, Project, User, Bid
+from app import db
+from app.models import Tasks, Project, User, Proposal, Jobs, User
 
 # Blueprint named consistently with registration
 main_bp = Blueprint('main', __name__)
@@ -20,8 +20,10 @@ def index():
                             # tasks=recent_tasks,
                             # projects=recent_projects,
                             # todos=[])
-    
-        return render_template('main/index.html')
+
+        # projectList = Project.query.order_by(Project.created_at.desc()).limit(5).all()
+        projectList = ""
+        return render_template('main/index.html', projects=projectList)
     except Exception as e:
         current_app.logger.error(f"Index error: {str(e)}", exc_info=True)
         flash('Error loading homepage', 'danger')
